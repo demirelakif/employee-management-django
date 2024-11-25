@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex justify-center items-center min-h-screen">
+    <form id="loginForm" action="{% url 'login' %}" method="POST" class="bg-gray-100 p-6 rounded shadow-md w-96">
+        {% csrf_token %}
+        <h2 class="text-2xl font-bold mb-4 text-center text-gray-800">Login</h2>
+        <label class="block mb-2 font-medium text-gray-700">Username</label>
+        <input type="text" name="username" id="username" class="w-full p-2 border rounded mb-4 bg-white text-gray-800" placeholder="Enter your username">
+        <label class="block mb-2 font-medium text-gray-700">Password</label>
+        <input type="password" name="password" id="password" class="w-full p-2 border rounded mb-4 bg-white text-gray-800" placeholder="Enter your password">
+        <button type="submit" class="w-full bg-teal-500 text-white py-2 rounded hover:bg-teal-600">Login</button>
+        <a href="/register" class="block mt-4 text-center text-teal-500 hover:underline">Register</a>
+    </form>
+</div>
+
+<script>
+    // Form submit event listener
+    document.querySelector("#loginForm").addEventListener("submit", function(e) {
+        e.preventDefault();  // Formun sayfayı yeniden yüklemesini engelle
+
+        // Kullanıcı adı ve şifreyi al
+        let username = document.querySelector("#username").value;
+        let password = document.querySelector("#password").value;
+
+        // Tarih ve saati almak
+        let currentDate = new Date();
+        let dateString = currentDate.toISOString().split('T')[0];  // YYYY-MM-DD
+        let timeString = currentDate.toLocaleString("tr-TR").split(" ")[1]  // HH:MM:SS
+        
+        // CSRF token'ı almak
+        let csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // Verileri JSON olarak hazırlama
+        let data = {
+            username: username,
+            password: password,
+            date: dateString,
+            time: timeString
+        };
+
+        // `fetch` API ile POST isteği gönderme
+        fetch('/api/login/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken  // CSRF token'ı ekle
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);  // Gelen yanıtı konsola yazdır
+            if (data.token) {
+                // Başarılı giriş durumunda yönlendirme
+                localStorage.setItem('authToken', data.token);
+                window.location.href = '/';  // Yönlendirme işlemi
+            } else {
+                alert('Invalid credentials');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
+
+{% endblock content %}

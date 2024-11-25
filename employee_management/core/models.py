@@ -60,7 +60,7 @@ class AttendanceRecord(models.Model):
     date = models.DateField()  # Artık dışarıdan alınabilir
     first_entry = models.TimeField()
     last_exit = models.TimeField(null=True, blank=True)
-    late_minutes = models.IntegerField(default=0)  # Geç kalınan dakika
+    penalty_minutes = models.FloatField(default=0)  # Geç kalınan dakika
 
     class Meta:
         unique_together = ('employee', 'date')  # Her kullanıcı için bir günlük kayıt

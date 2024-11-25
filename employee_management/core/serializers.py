@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Employee, AttendanceRecord, LeaveRequest, Notification
+from .models import Employee, AttendanceRecord, LeaveRequest
 
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,17 +35,12 @@ class RegisterSerializer(serializers.ModelSerializer):
 class AttendanceRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = AttendanceRecord
-        fields = ['date', 'first_entry', 'last_exit', 'late_minutes']
-        read_only_fields = ['late_minutes']  # Geç kalınan dakika sunucu tarafından hesaplanacak
+        fields = ['date', 'first_entry', 'last_exit', 'penalty_minutes','employee']
+        read_only_fields = ['penalty_minutes']  # Geç kalınan dakika sunucu tarafından hesaplanacak
 
 
 class LeaveRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaveRequest
-        fields = ['id', 'employee', 'start_date', 'end_date', 'reason', 'status', 'requested_on']
+        fields = ['id', 'start_date', 'end_date', 'reason', 'status', 'requested_on']
 
-
-class NotificationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Notification
-        fields = ['id', 'employee', 'message', 'created_at', 'is_read']

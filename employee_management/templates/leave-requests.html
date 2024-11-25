@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto my-10">
+    <h1 class="text-3xl font-bold mb-6">Leave Requests</h1>
+    <div id="leave-requests"></div>
+</div>
+
+<script>
+    async function fetchLeaveRequests() {
+        const response = await fetch('/api/leave-requests/', {
+            headers: {
+                'Authorization': `Token ${localStorage.getItem('authToken')}`  // Kullanıcı token'i
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const leaveRequestsContainer = document.getElementById('leave-requests');
+            leaveRequestsContainer.innerHTML = data.map(request => `
+                <div class="p-4 border rounded-lg mb-4">
+                    <h3 class="font-bold">Employee: ${request.employee.name}</h3>
+                    <p><strong>Start Date:</strong> ${request.start_date}</p>
+                    <p><strong>End Date:</strong> ${request.end_date}</p>
+                    <p><strong>Reason:</strong> ${request.reason}</p>
+                    <p><strong>Status:</strong> ${request.status}</p>
+                    <div class="mt-2">
+                        <button class="bg-green-500 text-white px-4 py-2 rounded-lg mr-2" onclick="updateStatus(${request.id}, 'approved')">Approve</button>
+                        <button class="bg-red-500 text-white px-4 py-2 rounded-lg" onclick="updateStatus(${request.id}, 'rejected')">Reject</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
+    async function updateStatus(requestId, status) {
+        const response = await fetch(`/api/leave-requests/${requestId}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Token ${localStorage.getItem('authToken')}`  // Kullanıcı token'i
+            },
+            body: JSON.stringify({ status })
+        });
+
+        if (response.ok) {
+            alert(`Request ${status === 'approved' ? 'approved' : 'rejected'}`);
+            fetchLeaveRequests();
+        }
+    }
+
+    fetchLeaveRequests();
+</script>
+{% endblock %}

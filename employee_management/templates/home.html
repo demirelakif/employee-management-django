@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+
+    <!-- Logout Button -->
+    <div class="absolute top-4 right-4">
+        <button id="logout-button" class="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600">
+            Logout
+        </button>
+    </div>
+
+    <!-- Başlık ve kullanıcı bilgisi -->
+    <div class="text-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Welcome, {{ request.user.username }}!</h1>
+    </div>
+
+    <!-- Yıllık izin bilgisi -->
+    <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md mb-6">
+        <h2 class="text-xl font-semibold text-gray-800">Your Annual Leave Days</h2>
+        <p class="mt-2 text-lg text-gray-600">{{ annual_leave_days|floatformat:2 }} days remaining</p>
+    </div>
+
+    <!-- Katılım bilgisi -->
+    <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md mb-6">
+        <h2 class="text-xl font-semibold text-gray-800">Attendance Records</h2>
+        
+        <!-- Attendance Table -->
+        <div class="mt-4 overflow-x-auto">
+            <table class="min-w-full table-auto">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Date</th>
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">First Entry</th>
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Last Exit</th>
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Penalty Minutes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attendance in attendances %}
+                    <tr class="border-b">
+                        <td class="px-4 py-2 text-sm text-gray-800">{{ attendance.date }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-800">{{ attendance.first_entry }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-800">{{ attendance.last_exit }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-800">{{ attendance.penalty_minutes|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-4 py-2 text-center text-sm text-gray-600">No attendance records found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Leave Request Button -->
+    <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md mt-6">
+        <a href="{% url 'leave_request' %}" class="block text-center bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">
+            Request Leave
+        </a>
+    </div>
+
+    <!-- Leave Requests Table (Kullanıcının izin talepleri) -->
+    <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md mt-6">
+        <h2 class="text-xl font-semibold text-gray-800">Your Leave Requests</h2>
+        
+        <!-- Leave Requests Table -->
+        <div class="mt-4 overflow-x-auto">
+            <table class="min-w-full table-auto">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Start Date</th>
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">End Date</th>
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Reason</th>
+                        <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in leave_requests %}
+                    <tr class="border-b">
+                        <td class="px-4 py-2 text-sm text-gray-800">{{ request.start_date }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-800">{{ request.end_date }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-800">{{ request.reason }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-800">{{ request.get_status_display }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-4 py-2 text-center text-sm text-gray-600">No leave requests found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Logout işlemi için token'ı localStorage'dan alıp API isteği gönderiyoruz
+    document.getElementById('logout-button').addEventListener('click', function (e) {
+        const token = localStorage.getItem('authToken');
+
+        if (!token) {
+            alert('You are not logged in.');
+            return;
+        }
+
+        let currentDate = new Date();
+        let dateString = currentDate.toISOString().split('T')[0];
+        let timeString = currentDate.toLocaleString("tr-TR").split(" ")[1];
+
+        fetch('/api/logout/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `token ${token}`,
+            },
+            body: JSON.stringify({
+                date: dateString,
+                time: timeString,
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                localStorage.removeItem('authToken');
+                window.location.href = '/login';
+            } else {
+                alert("Logout failed. Please try again.");
+            }
+        })
+        .catch(error => console.error('Logout error:', error));
+    });
+</script>
+
+{% endblock content %}

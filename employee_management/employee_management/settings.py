@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
     'rest_framework',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
+    'celery',
+    'drf_yasg',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True 
@@ -59,7 +61,7 @@ ROOT_URLCONF = 'employee_management.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -80,14 +82,16 @@ WSGI_APPLICATION = 'employee_management.wsgi.application'
 
 DATABASES = {
     'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'employee_management',
-            'USER': 'admin',
-            'PASSWORD': '123456',
-            'HOST': 'localhost',
-            'PORT': '5432',
-        }
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'employee_management',
+        'USER': 'admin',
+        'PASSWORD': 'admin',
+        'HOST': 'db',  # db servisi
+        'PORT': '5432',
+    }
 }
+
+
 
 AUTH_USER_MODEL = 'core.Employee'
 
